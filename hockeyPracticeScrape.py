@@ -78,7 +78,6 @@ def plot(df):
     # horizontal bar
     team_win_percent = df.groupby('Team Name')['Win %'].mean()
     sorted_teams = team_win_percent.sort_values(ascending=True)
-    print(sorted_teams)
     plt.figure(figsize=(15, 10))
     plt.subplot(2, 2, 1)
     bars = plt.barh(range(len(sorted_teams)), sorted_teams.values, color='steelblue', alpha=0.7, edgecolor='black')
@@ -165,3 +164,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
