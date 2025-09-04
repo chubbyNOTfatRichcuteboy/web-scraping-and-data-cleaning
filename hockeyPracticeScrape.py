@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests, time, os
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import numpy as np
 
 def webScrape():
@@ -64,14 +65,27 @@ def openCSV():
 
 # matplotlib
 def plot(df):
+    # # Vertical bar
+    # team_win_percent = df.groupby('Team Name')['Win %'].mean()
+    # plt.figure(figsize=(15, 10))
+    # plt.subplot(2, 2, 1)
+    # plt.bar(team_win_percent.index, team_win_percent.values, color='blue', alpha=0.7, edgecolor='black')
+    # plt.title("Average Win Rate Per Team", fontsize=8)
+    # plt.xlabel("Team", fontsize=8)
+    # plt.ylabel("Average win rate", fontsize=8)
+    # plt.xticks(rotation=90,ha='center',fontsize=6)
+
+    # horizontal bar
     team_win_percent = df.groupby('Team Name')['Win %'].mean()
+    sorted_teams = team_win_percent.sort_values(ascending=True)
+    print(sorted_teams)
     plt.figure(figsize=(15, 10))
     plt.subplot(2, 2, 1)
-    plt.bar(team_win_percent.index, team_win_percent.values, color='blue', alpha=0.7, edgecolor='black')
+    bars = plt.barh(range(len(sorted_teams)), sorted_teams.values, color='steelblue', alpha=0.7, edgecolor='black')
     plt.title("Average Win Rate Per Team", fontsize=8)
-    plt.xlabel("Team", fontsize=8)
-    plt.ylabel("Average win rate", fontsize=8)
-    plt.xticks(rotation=45)
+    plt.xlabel("Average Win Rate", fontsize=8)
+    plt.ylabel("Team", fontsize=8)
+    plt.yticks(range(len(sorted_teams)),sorted_teams.index, fontsize=8)
 
 
     plt.subplot(2, 2, 2)
@@ -81,9 +95,28 @@ def plot(df):
     plt.title("Team Performance: Offense vs Defense", fontsize=8)
     plt.colorbar(scatter, label='Win Percent')
 
-    for i, txt in enumerate(df['Team Name']):
-        if i%100 == 0:
-            plt.annotate(txt, (df['Goals For (GF)'].iloc[i], df['Goals Against (GA)'].iloc[i]), xytext=(5,5), textcoords='offset points', fontsize=6)
+    # for i, row in df.iterrows():
+    #     if i % 20 == 0:
+    #         annotatetext = f"{row['Team Name']} '{str(row['Year'])[-2:]}"
+    #         plt.annotate(annotatetext, (df['Goals For (GF)'].iloc[i], df['Goals Against (GA)'].iloc[i]), xytext=(5,5), textcoords='offset points', fontsize=6,
+    #         bbox=dict(boxstyle="round,pad=0.2", facecolor="white",alpha=0.4),
+    #         arrowprops=dict(arrowstyle="->",color="black",lw=0.5))
+
+    highestwinpercent = df.loc[df['Win %'].idxmax()]
+    lowestwinpercent = df.loc[df['Win %'].idxmin()]
+    mostgf = df.loc[df['Goals For (GF)'].idxmax()]
+    leastgf = df.loc[df['Goals For (GF)'].idxmin()]
+    mostga = df.loc[df['Goals Against (GA)'].idxmax()]
+    leastga = df.loc[df['Goals Against (GA)'].idxmin()]
+
+    poi = [highestwinpercent, lowestwinpercent, mostgf, leastgf, mostga, leastga]
+    for point in poi:
+        annotatetext = f"{point['Team Name']} '{str(point['Year'])[-2:]}"
+        plt.annotate(annotatetext,
+        (point['Goals For (GF)'], point['Goals Against (GA)']),
+        xytext=(15,15),
+        textcoords='offset points',
+        arrowprops=dict(arrowstyle="->",color="black",lw=0.5))
 
 
 
@@ -110,6 +143,10 @@ def plot(df):
     plt.xlabel("Single season losses", fontsize=12)
     plt.ylabel('How many times a loss total was achieved', fontsize=12)
 
+    sm = cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = plt.colorbar(sm, ax=plt.gca())
+    cbar.set_label('Frequency Count', fontsize=10)
 
 
 
@@ -122,7 +159,7 @@ def plot(df):
 
 
 def main():
-    webScrape()
+    # webScrape()
     df = openCSV()
     plot(df)
 
